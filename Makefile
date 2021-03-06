@@ -6,11 +6,11 @@ GCC = gcc $(OPTS)
 
 all: clean build
 
-build: cpu
-	$(GCC) -o $(BIN) cpu.o main.c
+build: m6502
+	$(GCC) -o $(BIN) m6502.o main.c
 
-cpu:
-	$(GCC) -c cpu.c -o cpu.o
+m6502:
+	$(GCC) -c m6502.c -o m6502.o
 
 clean:
-	rm -rf cpu.o $(BIN)
+	rm -rf m6502.o $(BIN)

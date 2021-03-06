@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <assert.h>
-#include "cpu.h"
+#include "m6502.h"
 
 void init_memory(Byte memory[], int size) {
     for (int i = 0; size > i; i++) {
@@ -8,34 +8,34 @@ void init_memory(Byte memory[], int size) {
     }
 }
 
-void _SYNC_ON(struct CPU *cpu) {
+void _SYNC_ON(m6502 *cpu) {
     cpu->SYNC = 1;
     cpu->buffer = 0;
 }
 
-void _SYNC_OFF(struct CPU *cpu) {
+void _SYNC_OFF(m6502 *cpu) {
     cpu->SYNC = 0;
     cpu->buffer = 0;
 }
 
-Byte fetchByte(struct CPU *cpu, Byte memory[]) {
+Byte fetchByte(m6502 *cpu, Byte memory[]) {
     Byte data = memory[cpu->PC];
     cpu->PC++;
     return data;
 }
 
-Byte fetchZP(struct CPU *cpu, Byte memory[]) {
+Byte fetchZP(m6502*cpu, Byte memory[]) {
     // Makes sure its in the zero page range
     assert(cpu->PC >= 0x0000 && cpu->PC <= 0x00FF);
     return fetchByte(cpu, memory);
 }
 
-void SetNegativeAndZeroFlags(struct CPU *cpu, Byte value) {
+void SetNegativeAndZeroFlags(m6502 *cpu, Byte value) {
     cpu->Flags.Z = value == 0;
     cpu->Flags.N = (value & 0b10000000) > 0;
 }
 
-void init_m6502(Word initVector, struct CPU *cpu) {
+void init_m6502(Word initVector, m6502 *cpu) {
     // Sets the program counter vector
     cpu->PC = initVector;
     // Sets the stack pointer to 255
@@ -50,7 +50,7 @@ void init_m6502(Word initVector, struct CPU *cpu) {
     cpu->IR = (cpu->PC << 3);
 }
 
-void tick_m6502(struct CPU* cpu, Byte memory[]) {
+void tick_m6502(m6502 *cpu, Byte memory[]) {
     if (cpu->SYNC) {
         _SYNC_OFF(cpu);
         cpu->Instruction = memory[cpu->PC];

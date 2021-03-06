@@ -1,7 +1,7 @@
-#include "cpu.h"
+#include "m6502.h"
 #include "stdio.h"
 int main() {
-    struct CPU cpu;
+    m6502 cpu;
 
     // CPU and Memory reset
     

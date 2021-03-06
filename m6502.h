@@ -363,7 +363,7 @@ struct StatusFlags {
 };
 
 // pain generator
-struct CPU {
+typedef struct m6502_s {
     Word PC; // Program Counter
     Byte SP; // Stack Pointer
 
@@ -375,10 +375,10 @@ struct CPU {
     Byte Instruction;
 
     struct StatusFlags Flags;
-};
+} m6502;
 
 void init_memory(Byte memory[], int size);
-void init_m6502(Word initVector, struct CPU *cpu);
-void tick_m6502(struct CPU* cpu, Byte memory[]);
+void init_m6502(Word initVector, m6502* cpu);
+void tick_m6502(m6502* cpu, Byte memory[]);
 
 #endif
