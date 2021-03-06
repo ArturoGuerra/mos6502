@@ -25,8 +25,9 @@ Byte fetchByte(m6502 *cpu, Byte memory[]) {
 }
 
 Byte fetchZP(m6502*cpu, Byte memory[]) {
-    // Makes sure its in the zero page range
-    assert(cpu->PC >= 0x0000 && cpu->PC <= 0x00FF);
+    // Makes sure its the byte is stored in between 0x0000 and 0x00FF
+    // right shifts by 8 bits and check if its 0
+    assert(cpu->PC >> 8 == 0);
     return fetchByte(cpu, memory);
 }
 
