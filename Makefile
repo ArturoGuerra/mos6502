@@ -1,7 +1,7 @@
 .PHONY: all build cpu clean
 
 BIN = m6502
-OPTS = -Wall -std=c11
+OPTS = -Wall -std=c11 -O3 -g
 GCC = gcc $(OPTS)
 
 all: clean build

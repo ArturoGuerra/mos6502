@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <assert.h>
 #include "cpu.h"
+
+void init_memory(Byte memory[], int size) {
+    for (int i = 0; size > i; i++) {
+        memory[i] = 0;
+    }
+}
+
 void _SYNC_ON(struct CPU *cpu) {
     cpu->SYNC = 1;
     cpu->buffer = 0;
@@ -46,30 +53,72 @@ void init_m6502(Word initVector, struct CPU *cpu) {
 void tick_m6502(struct CPU* cpu, Byte memory[]) {
     if (cpu->SYNC) {
         _SYNC_OFF(cpu);
+        cpu->Instruction = memory[cpu->PC];
         cpu->IR = memory[cpu->PC] << 3;
         cpu->PC++;
+        return;
     }
 
     switch(cpu->IR++) {
     case INS_LDA_IM<<3|0: cpu->A = fetchByte(cpu, memory);SetNegativeAndZeroFlags(cpu, cpu->A);_SYNC_ON(cpu);break;
 
     case INS_LDA_ZP<<3|0: cpu->buffer = fetchZP(cpu, memory); break;
-    case INS_LDA_ZP<<3|1: cpu->A = memory[cpu->buffer];SetNegativeAndZeroFlags(cpu, cpu->A);break;
+    case INS_LDA_ZP<<3|1: cpu->A = memory[cpu->buffer];SetNegativeAndZeroFlags(cpu, cpu->A);_SYNC_ON(cpu);break;
 
     case INS_LDA_ZPX<<3|0: cpu->buffer = fetchZP(cpu, memory); break;
-    case INS_LDA_ZPX<<3|1:cpu->A = memory[cpu->PC];SetNegativeAndZeroFlags(cpu, cpu->A);break;
-    case INS_LDA_ZPX<<3|2: cpu->A += cpu->X;SetNegativeAndZeroFlags(cpu, cpu->A);_SYNC_OFF(cpu);break;
+    case INS_LDA_ZPX<<3|1: cpu->buffer += cpu->X;break;
+    case INS_LDA_ZPX<<3|2: cpu->A = memory[cpu->buffer];SetNegativeAndZeroFlags(cpu, cpu->A);_SYNC_ON(cpu);break;
 
     case INS_LDA_AB<<3|0: cpu->buffer = fetchByte(cpu, memory); break;
     case INS_LDA_AB<<3|1: cpu->buffer |= (Word)fetchByte(cpu, memory) << 8; break;
-    case INS_LDA_AB<<3|2:cpu->A = memory[cpu->buffer];SetNegativeAndZeroFlags(cpu, cpu->A);_SYNC_OFF(cpu);break;
+    case INS_LDA_AB<<3|2: cpu->A = memory[cpu->buffer];SetNegativeAndZeroFlags(cpu, cpu->A);_SYNC_ON(cpu);break;
 
-    case INS_LDA_ABX<<3|0: break;
+    // Has between 4 and 5 cycles
+    case INS_LDA_ABX<<3|0: cpu->buffer = fetchByte(cpu, memory); break;
+    case INS_LDA_ABX<<3|1: cpu->buffer |= (Word)fetchByte(cpu, memory) << 8; break;
+    case INS_LDA_ABX<<3|2: break;
+    case INS_LDA_ABX<<3|3: break;
+
+    case INS_LDA_ABY<<3|0: break;
+    case INS_LDA_ABY<<3|1: break;
+    case INS_LDA_ABY<<3|2: break;
+    case INS_LDA_ABY<<3|3: break;
+
+    case INS_LDA_INX<<3|0: break;
+    case INS_LDA_INX<<3|1: break;
+    case INS_LDA_INX<<3|2: break;
+    case INS_LDA_INX<<3|3: break;
+    case INS_LDA_INX<<3|4: break;
+
+    case INS_LDA_INY<<3|0: break;
+    case INS_LDA_INY<<3|1: break;
+    case INS_LDA_INY<<3|2: break;
+    case INS_LDA_INY<<3|3: break;
+    case INS_LDA_INY<<3|4: break;
+
+    case INS_LDX_IM<<3|0: cpu->X = fetchByte(cpu, memory); SetNegativeAndZeroFlags(cpu, cpu->X); _SYNC_ON(cpu); break;
+
+    case INS_LDX_ZP<<3|0: cpu->buffer = fetchZP(cpu, memory); break;
+    case INS_LDX_ZP<<3|1: cpu->X = memory[cpu->buffer]; SetNegativeAndZeroFlags(cpu, cpu->X); _SYNC_ON(cpu); break;
+
+    case INS_LDX_ZPY<<3|0: cpu->buffer = fetchZP(cpu, memory); break;
+    case INS_LDX_ZPY<<3|1: cpu->buffer += cpu->Y; break;
+    case INS_LDX_ZPY<<3|2: cpu->X = memory[cpu->buffer]; SetNegativeAndZeroFlags(cpu, cpu->X); _SYNC_ON(cpu); break;
+
+    case INS_LDX_AB<<3|0: cpu->buffer = fetchByte(cpu, memory); break;
+    case INS_LDX_AB<<3|1: cpu->buffer |= (Word)fetchByte(cpu, memory) << 8; break;
+    case INS_LDX_AB<<3|2: cpu->X = memory[cpu->buffer]; SetNegativeAndZeroFlags(cpu, cpu->X); _SYNC_ON(cpu); break;
+
+    case INS_LDX_ABY<<3|0: break;
+    case INS_LDX_ABY<<3|1: break;
+    case INS_LDX_ABY<<3|2: break;
+    case INS_LDX_ABY<<3|3: break;
 
 
-    case INS_NOP_IMP: break;
+
+    case INS_NOP_IMP<<3|0: _SYNC_ON(cpu); break;
     default:
-        printf("Unknown instruction\n");
+        printf("Unknown instruction: %04X\n", cpu->Instruction);
         break;
     }    
 }

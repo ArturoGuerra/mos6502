@@ -372,10 +372,12 @@ struct CPU {
     // Internal variables used to tick the cpu
     Word IR, buffer;
     int SYNC;
+    Byte Instruction;
 
     struct StatusFlags Flags;
 };
 
+void init_memory(Byte memory[], int size);
 void init_m6502(Word initVector, struct CPU *cpu);
 void tick_m6502(struct CPU* cpu, Byte memory[]);
 
