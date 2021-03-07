@@ -1,13 +1,33 @@
 #include "m6502.h"
 #include "memory.h"
 #include "stdio.h"
+#include "stdlib.h"
 
-int main() {
+int main(int argc, char* argv[]) {
     m6502_t cpu;
 
+    if (argc != 3) {
+        printf("Invalid ammount of args %d\n", argc);
+        return 1;
+    }
+
+    char* filename = argv[1];
+    int inscount = atoi(argv[2]);
     // CPU and Memory reset
     
-    init_memory(Memory, MAX_MEM);    
+    init_memory(Memory, MAX_MEM);
+
+    FILE *fp;
+    fp = fopen(filename, "rb");
+    if (fp == NULL) {
+        printf("Error opening file: %s\n", filename);
+        return 1;
+    }
+
+    int size = fread(&Memory, sizeof(Byte), MAX_MEM, fp);
+    fclose(fp);
+
+    printf("Rom Size: %d\n", size);
 
 /* Working set of instructions */    
 //    // 3 Cycles 2 Bytes
@@ -31,24 +51,35 @@ int main() {
 
 
     // 4 Cycles 3 Bytes
-    Memory[0xFFFC] = INS_LDA_AB; // PC
-    Memory[0xFFFD] = 0xFF; // PC
-    Memory[0xFFFE] = 0xAF; // PC
-    Memory[0xAFFF] = 0x43;
+//    Memory[0xFFFD] = 0xFF; // PC
+//    Memory[0xFFFE] = 0xAF; // PC
+//    Memory[0xAFFF] = 0x43;
+//
+//    Memory[0xFFFF] = INS_LDA_IM;
+//    Memory[0x0000] = 0x30;
 
-    Memory[0xFFFF] = INS_LDA_IM;
-    Memory[0x0000] = 0x30;
-
+    // 2 Cycles 2 Bytes
+//    Memory[0xFFFC] = INS_LDX_IM;
+//    Memory[0xFFFD] = 0x10;
+//    
+//    // 4-5 Cycles 3 bytes
+//    Memory[0xFFFE] = INS_LDA_ABX;
+//    Memory[0xFFFF] = 0xFF;
+//    Memory[0x0000] = 0x10;
+//    Memory[0x110F] = 0x64;
+//
     
     init_m6502(0xFFFC, &cpu);
 
     // Need to make a reset sequence at some point
     cpu.DB = Memory[cpu.PC];
+    
+    printf("PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X\n", cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
 
-    int ticks = 4 + 2;
+    int ticks = inscount;
     for(int i = 1; ticks >= i; i++) {
-        printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DataBus:0x%02X AddrBus:0x%04X\n", i, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
         tick_m6502(&cpu);
+        printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X INS:0x%02X\n", i, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB, cpu.INS);
 
         // Read
         if (cpu.RW) {
@@ -64,7 +95,6 @@ int main() {
         
     }
     
-    printf("PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DataBus:0x%02X AddrBus:0x%04X\n", cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
 
 //    int i = 1;
 //

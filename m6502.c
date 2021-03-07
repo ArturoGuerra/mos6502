@@ -42,6 +42,7 @@ void tick_m6502(m6502_t *cpu) {
         cpu->INS = cpu->DB;
         cpu->IR = cpu->DB << 3;
         cpu->RW = 1;
+        cpu->IRX = cpu->IRY = 0;
         FB();
         PC();
         SA(cpu->PC);
@@ -63,27 +64,32 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDA_AB<<3|2:cpu->A = cpu->DB;SetNegativeAndZeroFlags(cpu, cpu->A);_SYNC_ON();break;
 
 //    // Has between 4 and 5 cycles
-//    case INS_LDA_ABX<<3|0: cpu->buffer = fetchByte(cpu, memory); break;
-//    case INS_LDA_ABX<<3|1: cpu->buffer |= (Word)fetchByte(cpu, memory) << 8; break;
-//    case INS_LDA_ABX<<3|2: break;
-//    case INS_LDA_ABX<<3|3: break;
+    case INS_LDA_ABX<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_LDA_ABX<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->X;break;
+    case INS_LDA_ABX<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) cpu->A = cpu->DB;_SYNC_ON();break;
+    case INS_LDA_ABX<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
 
-//    case INS_LDA_ABY<<3|0: break;
-//    case INS_LDA_ABY<<3|1: break;
-//    case INS_LDA_ABY<<3|2: break;
-//    case INS_LDA_ABY<<3|3: break;
+//    // Has between 4 and 5 cycles
+    case INS_LDA_ABY<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_LDA_ABY<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->Y;break;
+    case INS_LDA_ABY<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) cpu->A = cpu->DB;_SYNC_ON();break;
+    case INS_LDA_ABY<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
 
-//    case INS_LDA_INX<<3|0: break;
-//    case INS_LDA_INX<<3|1: break;
-//    case INS_LDA_INX<<3|2: break;
-//    case INS_LDA_INX<<3|3: break;
-//    case INS_LDA_INX<<3|4: break;
+    case INS_LDA_INX<<3|0: break;
+    case INS_LDA_INX<<3|1: break;
+    case INS_LDA_INX<<3|2: break;
+    case INS_LDA_INX<<3|3: break;
+    case INS_LDA_INX<<3|4: _SYNC_ON();break;
 
-//    case INS_LDA_INY<<3|0: break;
-//    case INS_LDA_INY<<3|1: break;
-//    case INS_LDA_INY<<3|2: break;
-//    case INS_LDA_INY<<3|3: break;
-//    case INS_LDA_INY<<3|4: break;
+    case INS_LDA_INY<<3|0: break;
+    case INS_LDA_INY<<3|1: break;
+    case INS_LDA_INY<<3|2: break;
+    case INS_LDA_INY<<3|3: 
+        _SYNC_ON();
+        break;
+    case INS_LDA_INY<<3|4:
+        _SYNC_ON();
+        break;
 
     case INS_LDX_IM<<3|0:cpu->X = cpu->DB;PC();SetNegativeAndZeroFlags(cpu, cpu->X);_SYNC_ON();break;
     
