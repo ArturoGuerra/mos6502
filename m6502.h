@@ -348,6 +348,7 @@ typedef unsigned short Word; // 16-Bit
 
 typedef unsigned int u32; // 32-Bit
 typedef signed int s32; // 32-Bit
+typedef unsigned long PINS; // cpu pins lol
 
 Byte Memory[MAX_MEM];
 
@@ -369,16 +370,26 @@ typedef struct m6502_s {
 
     Byte A, X, Y; // Accumulator, Index Register X and Index Register Y;
 
-    // Internal variables used to tick the cpu
-    Word IR, buffer;
-    int SYNC;
-    Byte Instruction;
+    // I/O
+
+    Byte RDY : 1;
+    Byte SYNC : 1;
+    // High = Read Low = Write
+    Byte RW : 1; // Data bus RW bit
+    Byte DB; // Data bus
+    Word AB; // Address bus
+
+    // Internal registers used to keep track of stuff
+    Word IR; // Internal Instruction counter
+    Word IRX; // Internal general purpose internal register
+    Word IRY; // Internal general purpose internal register
+    Byte INS; // Internal debug instruction pointer
 
     struct StatusFlags Flags;
-} m6502;
+} m6502_t;
 
 void init_memory(Byte memory[], int size);
-void init_m6502(Word initVector, m6502* cpu);
-void tick_m6502(m6502* cpu, Byte memory[]);
+void init_m6502(Word initVector, m6502_t *cpu);
+void tick_m6502(m6502_t *cpu);
 
 #endif
