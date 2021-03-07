@@ -12,18 +12,6 @@
 #define _SYNC_ON() cpu->SYNC = 1; cpu->AB = cpu->PC;
 #define _SYNC_OFF() cpu->SYNC = 0;
 
-void init_memory(Byte memory[], int size) {
-    for (int i = 0; size > i; i++) {
-        memory[i] = 0;
-    }
-}
-
-// Sets the address lines to the program counter
-//void FB(m6502_t *cpu) {
-//    cpu->AddrBus = cpu->PC;
-//    cpu->PC++;
-//}
-
 void SetNegativeAndZeroFlags(m6502_t *cpu, Byte value) {
     cpu->Flags.Z = value == 0;
     cpu->Flags.N = (value & 0b10000000) > 0;

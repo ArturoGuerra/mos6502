@@ -350,8 +350,6 @@ typedef unsigned int u32; // 32-Bit
 typedef signed int s32; // 32-Bit
 typedef unsigned long PINS; // cpu pins lol
 
-Byte Memory[MAX_MEM];
-
 struct StatusFlags {
     Byte C : 1; // Carry Flag
     Byte Z : 1; // Zero Flag
@@ -388,7 +386,6 @@ typedef struct m6502_s {
     struct StatusFlags Flags;
 } m6502_t;
 
-void init_memory(Byte memory[], int size);
 void init_m6502(Word initVector, m6502_t *cpu);
 void tick_m6502(m6502_t *cpu);
 

@@ -1,6 +1,6 @@
 #include "m6502.h"
+#include "memory.h"
 #include "stdio.h"
-#define MAX_MAN 1024 * 64;
 
 int main() {
     m6502_t cpu;
@@ -31,13 +31,13 @@ int main() {
 
 
     // 4 Cycles 3 Bytes
-    //Memory[0xFFFC] = INS_LDA_AB; // PC
-    //Memory[0xFFFD] = 0xFF; // PC
-    //Memory[0xFFFE] = 0xAF; // PC
-    //Memory[0xAFFF] = 0x43;
+    Memory[0xFFFC] = INS_LDA_AB; // PC
+    Memory[0xFFFD] = 0xFF; // PC
+    Memory[0xFFFE] = 0xAF; // PC
+    Memory[0xAFFF] = 0x43;
 
-    //Memory[0xFFFF] = INS_LDA_IM;
-    //Memory[0x0000] = 0x30;
+    Memory[0xFFFF] = INS_LDA_IM;
+    Memory[0x0000] = 0x30;
 
     
     init_m6502(0xFFFC, &cpu);
