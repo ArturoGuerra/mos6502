@@ -41,7 +41,9 @@ void init_m6502(Word initVector, m6502_t *cpu) {
     // Sync pin is set to 1 so it can fetch an instruction
     cpu->SYNC = 1;
     // Ready pin is set to 1 after startup
-    cpu->RDY = 0;
+    cpu->RDY = 1;
+    // Forces the cpu into a reset state
+    cpu->RESET = 1;
     // RW is set to 1 so it can read from the bus
     cpu->RW = 1;
     cpu->IR = (cpu->PC << 3);
@@ -56,13 +58,28 @@ void tick_m6502(m6502_t *cpu) {
         cpu->IR = cpu->DB << 3;
         cpu->RW = 1;
         cpu->IRX = cpu->IRY = 0;
-        FB();
-        PC();
-        SAB(cpu->PC);
+        if (cpu->RESET) {
+            printf("Entering reset cycle\n");
+            cpu->INS = INS_BRK_IMP;
+            cpu->IR = INS_BRK_IMP << 3;
+        } else {
+            PC();
+            FB();
+        }
+
         return;
     }
 
     switch(cpu->IR++) {
+    // Reset instruction
+    case INS_BRK_IMP<<3|0:cpu->RESET = 0;break;
+    case INS_BRK_IMP<<3|1:break;
+    case INS_BRK_IMP<<3|2:cpu->AB = 0xFFFC;break;
+    case INS_BRK_IMP<<3|3:cpu->IRX = cpu->DB;cpu->AB++;break;
+    case INS_BRK_IMP<<3|4:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX;break;
+    case INS_BRK_IMP<<3|5:cpu->PC = cpu->IRX;_SYNC_ON();break;
+  
+
     case INS_LDA_IM<<3|0:cpu->A = cpu->DB;PC();set_nz(cpu, cpu->A);_SYNC_ON();break;
 
     case INS_LDA_ZP<<3|0:FBZ();PC();break;
@@ -88,9 +105,14 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDA_ABY<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) cpu->A = cpu->DB;_SYNC_ON();break;
     case INS_LDA_ABY<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
 
-    case INS_LDA_INX<<3|0: FBZ();PC();break;
+    case INS_LDA_INX<<3|0: 
+        FBZ();
+        PC();
+        printf("1 0x%04X\n", cpu->AB);
+        break;
     case INS_LDA_INX<<3|1:
         cpu->AB = cpu->DB + cpu->X;
+        printf("2 0x%04X 0x%02X \n", cpu->AB, cpu->X);
         break;
     case INS_LDA_INX<<3|2:
         cpu->IRX = cpu->DB;

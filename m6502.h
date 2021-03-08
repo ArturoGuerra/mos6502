@@ -341,6 +341,7 @@
 // The RTI instruction is used at the end of an interrupt processing routine. It pulls the processor flags from the stack followed by the program counter.
 #define INS_RTI_IMP 0x40
 
+#define M6502_START_UP 7
 
 typedef unsigned char Byte; // 8-Bit
 typedef unsigned short Word; // 16-Bit
