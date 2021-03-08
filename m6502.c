@@ -88,32 +88,36 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDA_ABY<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) cpu->A = cpu->DB;_SYNC_ON();break;
     case INS_LDA_ABY<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
 
-    case INS_LDA_INX<<3|0: 
-        FBZ();
-        PC();
-        break;
-    case INS_LDA_INX<<3|1: break;
+    case INS_LDA_INX<<3|0: FBZ();PC();break;
+    case INS_LDA_INX<<3|1:
         cpu->AB = cpu->DB + cpu->X;
         break;
-    case INS_LDA_INX<<3|2: break;
-        cpu->IRX = cpu->DB;PC();FB();
+    case INS_LDA_INX<<3|2:
+        cpu->IRX = cpu->DB;
+        cpu->AB += 1;
         break;
-    case INS_LDA_INX<<3|3: break;
+    case INS_LDA_INX<<3|3:
         cpu->IRX |= (Word)cpu->DB << 8;
-        PC();
         FBIRX();
         break;
     case INS_LDA_INX<<3|4: _SYNC_ON();
         cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();
         break;
 
-    case INS_LDA_INY<<3|0: break;
-    case INS_LDA_INY<<3|1: break;
-    case INS_LDA_INY<<3|2: break;
-    case INS_LDA_INY<<3|3: 
-        _SYNC_ON();
+    case INS_LDA_INY<<3|0:FBZ();PC();break;
+    case INS_LDA_INY<<3|1:
+        cpu->IRX = cpu->DB;
+        cpu->AB += 1;
+        break;
+    case INS_LDA_INY<<3|2:
+        cpu->IRX |= (Word)cpu->DB << 8;
+        cpu->AB = cpu->IRX + cpu->Y;
+        break;           
+    case INS_LDA_INY<<3|3:
+        if ((cpu->AB ^ cpu->DB)>> 8) cpu->A = cpu->DB;_SYNC_ON();
         break;
     case INS_LDA_INY<<3|4:
+        cpu->A = cpu->DB;
         _SYNC_ON();
         break;
 
