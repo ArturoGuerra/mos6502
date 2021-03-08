@@ -1,6 +1,7 @@
 #ifndef _MEMORY_H_
 #define _MEMORY_H_
-#define MAX_MEN 1024 * 64;
+
+#define MAX_MEM 1024 * 64
 
 typedef unsigned char Byte;
 Byte Memory[MAX_MEM];

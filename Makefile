@@ -13,4 +13,4 @@ m6502:
 	$(GCC) -c m6502.c -o m6502.o
 
 clean:
-	rm -rf m6502.o $(BIN) rom.bin
+	rm -rf m6502.o $(BIN)

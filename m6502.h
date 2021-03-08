@@ -1,8 +1,6 @@
 #ifndef _CPU_H_
 #define _CPU_H_
 
-#define MAX_MEM 1024 * 64
-
 // 6502 Instructions 
 
 /* Load/Store Operations */
@@ -343,23 +341,11 @@
 // The RTI instruction is used at the end of an interrupt processing routine. It pulls the processor flags from the stack followed by the program counter.
 #define INS_RTI_IMP 0x40
 
+
 typedef unsigned char Byte; // 8-Bit
 typedef unsigned short Word; // 16-Bit
-
 typedef unsigned int u32; // 32-Bit
 typedef signed int s32; // 32-Bit
-typedef unsigned long PINS; // cpu pins lol
-
-struct StatusFlags {
-    Byte C : 1; // Carry Flag
-    Byte Z : 1; // Zero Flag
-    Byte I : 1; // Interrupt Disable
-    Byte D : 1; // Decimal Mode
-    Byte B : 1; // Break Command
-    // some unsed shit here ?
-    Byte V : 1; // Overflow Flag
-    Byte N : 1; // Negative Flag
-};
 
 // pain generator
 typedef struct m6502_s {
@@ -367,11 +353,12 @@ typedef struct m6502_s {
     Byte SP; // Stack Pointer
 
     Byte A, X, Y; // Accumulator, Index Register X and Index Register Y;
+    Byte Flags;
 
     // I/O
-
     Byte RDY : 1;
     Byte SYNC : 1;
+    Byte RESET  : 1;
     // High = Read Low = Write
     Byte RW : 1; // Data bus RW bit
     Byte DB; // Data bus
@@ -382,8 +369,6 @@ typedef struct m6502_s {
     Word IRX; // Internal general purpose internal register
     Word IRY; // Internal general purpose internal register
     Byte INS; // Internal debug instruction pointer
-
-    struct StatusFlags Flags;
 } m6502_t;
 
 void init_m6502(Word initVector, m6502_t *cpu);
