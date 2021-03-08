@@ -1,4 +1,4 @@
 m6502
 *.o
 *.bin
-_pycache_/*
+__pycache__/*
