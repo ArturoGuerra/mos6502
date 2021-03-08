@@ -34,9 +34,6 @@ int main(int argc, char* argv[]) {
     
     init_m6502(0xFFFC, &cpu);
 
-    // Need to make a reset sequence at some point
-    cpu.DB = Memory[cpu.PC];
-    
     printf("PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X\n", cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
     int ticks = M6502_START_UP + inscount;
     for(int i = 1; ticks >= i && cpu.RDY; i++) {
