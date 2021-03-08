@@ -29,8 +29,6 @@ int main(int argc, char* argv[]) {
     fclose(fp);
 
     printf("Rom Size: %d\n", size);
-
-
     
     init_m6502(0xFFFC, &cpu);
 
