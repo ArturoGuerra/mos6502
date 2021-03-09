@@ -354,12 +354,14 @@ typedef struct m6502_s {
     Byte SP; // Stack Pointer
 
     Byte A, X, Y; // Accumulator, Index Register X and Index Register Y;
-    Byte Flags;
+    Byte P;
 
     // I/O
+    Byte IRQ : 1;
+    Byte NMI : 1;
     Byte RDY : 1;
-    Byte SYNC : 1;
     Byte RESET  : 1;
+    Byte SYNC : 1;
     // High = Read Low = Write
     Byte RW : 1; // Data bus RW bit
     Byte DB; // Data bus
@@ -368,8 +370,6 @@ typedef struct m6502_s {
     // Internal registers used to keep track of stuff
     Word IR; // Internal Instruction counter
     Word IRX; // Internal general purpose internal register
-    Word IRY; // Internal general purpose internal register
-    Byte INS; // Internal debug instruction pointer
 } m6502_t;
 
 void init_m6502(Word initVector, m6502_t *cpu);

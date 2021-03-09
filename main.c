@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     int ticks = M6502_START_UP + inscount;
     for(int i = 1; ticks >= i && cpu.RDY; i++) {
         tick_m6502(&cpu);
-        printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X INS:0x%02X\n", i, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB, cpu.INS);
+        printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X\n", i, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
 
         // Read
         if (cpu.RW) {

@@ -15,26 +15,26 @@
 #define SAB(addr) cpu->AB = addr;
 
 // CPU Status Flags
-#define M6502_NF 0b10000000
-#define M6502_VF 0b01000000
-#define M6502_BF 0b00110000 // Not a real CPU Flag
-#define M6502_DF 0b00001000
-#define M6502_IF 0b00000100
-#define M6502_ZF 0b00000010
-#define M6502_CF 0b00000001
+#define M6502_NF 128 //0b10000000
+#define M6502_VF 64 //0b01000000
+#define M6502_BF 48 //0b00110000 // Not a real CPU Flag
+#define M6502_DF 8 //0b00001000
+#define M6502_IF 4 //0b00000100
+#define M6502_ZF 2 //0b00000010
+#define M6502_CF 1 //0b00000001
 
 void set_nz(m6502_t *cpu, Byte value) {
-    (value == 0) ? (cpu->Flags |= M6502_ZF) : (cpu->Flags &= ~M6502_ZF);
-    ((value & 0b10000000) > 0) ? (cpu->Flags |= M6502_NF) : (cpu->Flags &= ~M6502_NF);
+    (value == 0) ? (cpu->P |= M6502_ZF) : (cpu->P &= ~M6502_ZF);
+    ((value & 0b10000000) > 0) ? (cpu->P |= M6502_NF) : (cpu->P &= ~M6502_NF);
 }
 
 void init_m6502(Word initVector, m6502_t *cpu) {
     // Sets the program counter vector
     cpu->PC = initVector;
     // Sets the stack pointer to 255
-    cpu->SP = 0x00;
+    cpu->SP = 0xFF;
     // Sets all cpu flags to 0
-    cpu->Flags = 0;
+    cpu->P = 0;
     // Sets all cpu registers to 0
     cpu->A = cpu->X = cpu->Y = 0;
 
@@ -54,13 +54,10 @@ void tick_m6502(m6502_t *cpu) {
     if (cpu->SYNC) {
         _SYNC_OFF();
         //printf("Instruction: %02X\n", cpu->DataBus);
-        cpu->INS = cpu->DB;
         cpu->IR = cpu->DB << 3;
         cpu->RW = 1;
-        cpu->IRX = cpu->IRY = 0;
+        cpu->IRX = 0;
         if (cpu->RESET) {
-            printf("Entering reset cycle\n");
-            cpu->INS = INS_BRK_IMP;
             cpu->IR = INS_BRK_IMP << 3;
         } else {
             PC();
@@ -71,7 +68,7 @@ void tick_m6502(m6502_t *cpu) {
     }
 
     switch(cpu->IR++) {
-    // Reset instruction
+    // Reset instruction very inaccurate atm
     case INS_BRK_IMP<<3|0:cpu->RESET = 0;break;
     case INS_BRK_IMP<<3|1:break;
     case INS_BRK_IMP<<3|2:cpu->AB = 0xFFFC;break;
@@ -79,7 +76,6 @@ void tick_m6502(m6502_t *cpu) {
     case INS_BRK_IMP<<3|4:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX;break;
     case INS_BRK_IMP<<3|5:cpu->PC = cpu->IRX;_SYNC_ON();break;
   
-
     case INS_LDA_IM<<3|0:cpu->A = cpu->DB;PC();set_nz(cpu, cpu->A);_SYNC_ON();break;
 
     case INS_LDA_ZP<<3|0:FBZ();PC();break;
@@ -105,36 +101,14 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDA_ABY<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) cpu->A = cpu->DB;_SYNC_ON();break;
     case INS_LDA_ABY<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
 
-    case INS_LDA_INX<<3|0: 
-        FBZ();
-        PC();
-        printf("1 0x%04X\n", cpu->AB);
-        break;
-    case INS_LDA_INX<<3|1:
-        cpu->AB = cpu->DB + cpu->X;
-        printf("2 0x%04X 0x%02X \n", cpu->AB, cpu->X);
-        break;
-    case INS_LDA_INX<<3|2:
-        cpu->IRX = cpu->DB;
-        cpu->AB += 1;
-        break;
-    case INS_LDA_INX<<3|3:
-        cpu->IRX |= (Word)cpu->DB << 8;
-        FBIRX();
-        break;
-    case INS_LDA_INX<<3|4: _SYNC_ON();
-        cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();
-        break;
-
+    case INS_LDA_INX<<3|0:FBZ();PC();break;
+    case INS_LDA_INX<<3|1:cpu->AB = cpu->DB + cpu->X;break;
+    case INS_LDA_INX<<3|2:cpu->IRX = cpu->DB;cpu->AB += 1;break;
+    case INS_LDA_INX<<3|3:cpu->IRX |= (Word)cpu->DB << 8;FBIRX();break;
+    case INS_LDA_INX<<3|4: _SYNC_ON();cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
     case INS_LDA_INY<<3|0:FBZ();PC();break;
-    case INS_LDA_INY<<3|1:
-        cpu->IRX = cpu->DB;
-        cpu->AB += 1;
-        break;
-    case INS_LDA_INY<<3|2:
-        cpu->IRX |= (Word)cpu->DB << 8;
-        cpu->AB = cpu->IRX + cpu->Y;
-        break;           
+    case INS_LDA_INY<<3|1:cpu->IRX = cpu->DB;cpu->AB += 1;break;
+    case INS_LDA_INY<<3|2:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX + cpu->Y;break;           
     case INS_LDA_INY<<3|3:
         if ((cpu->AB ^ cpu->DB)>> 8) cpu->A = cpu->DB;_SYNC_ON();
         break;
@@ -156,6 +130,30 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDX_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
     case INS_LDX_AB<<3|2:cpu->X = cpu->DB;set_nz(cpu, cpu->X);_SYNC_ON();break;
 
+    case INS_JMP_AB<<3|0:
+        cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_JMP_AB<<3|1:
+        cpu->IRX |= (Word)cpu->DB << 8;
+        cpu->PC = cpu->IRX;
+        _SYNC_ON();
+        break;
+
+    case INS_JMP_IN<<3|0:
+        cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_JMP_IN<<3|1:
+        cpu->IRX |= (Word)cpu->DB << 8;PC();
+        cpu->AB = cpu->IRX;
+        break;
+    case INS_JMP_IN<<3|2:
+        cpu->IRX = cpu->DB;
+        cpu->AB++;
+        break;
+    case INS_JMP_IN<<3|3:
+        cpu->IRX |= (Word)cpu->DB << 8;
+        cpu->PC = cpu->IRX;
+        _SYNC_ON();
+        break;
+
 //    case INS_LDX_ABY<<3|0: break;
 //    case INS_LDX_ABY<<3|1: break;
 //    case INS_LDX_ABY<<3|2: break;
@@ -163,7 +161,7 @@ void tick_m6502(m6502_t *cpu) {
 
     case INS_NOP_IMP<<3|0: _SYNC_ON(); break;
     default:
-        printf("Unknown instruction:0x%02X\n", cpu->INS);
+        printf("Unknown instruction%02X\n", cpu->IR);
         //getchar();
         break;
     }    
