@@ -23,7 +23,7 @@
 #define INS_LDX_ABY 0xBE
 
 // LDY - Load Y Register
-#define INS_LDY_IN 0xA0
+#define INS_LDY_IM 0xA0
 #define INS_LDY_ZP 0xA4
 #define INS_LDY_ZPX 0xB4
 #define INS_LDY_AB 0xAC

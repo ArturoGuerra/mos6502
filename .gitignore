@@ -2,3 +2,4 @@ m6502
 *.o
 *.bin
 __pycache__/*
+*.s

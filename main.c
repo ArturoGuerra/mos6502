@@ -36,12 +36,12 @@ int main(int argc, char* argv[]) {
     int ticks = M6502_START_UP + inscount;
     for(int i = 1; ticks >= i && cpu.RDY; i++) {
         tick_m6502(&cpu);
-        printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X\n", i, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
+        if (i > 6) printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X\n", i, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
 
         // Read
         if (cpu.RW) {
             cpu.DB = Memory[cpu.AB];
-            printf("Reading from:0x%04X Data:0x%02X\n", cpu.AB, cpu.DB);
+            if (i > 6) printf("Reading from:0x%04X Data:0x%02X\n", cpu.AB, cpu.DB);
         }
         
         // Write
@@ -51,6 +51,10 @@ int main(int argc, char* argv[]) {
         }
         
     }
+
+
+    printf("ZeroPage Mode: %02X\n", Memory[0x001F]);
+    printf("Absolute Mode: %02X\n", Memory[0x1FFF]);
     
 
 //    int i = 1;

@@ -23,6 +23,9 @@
 #define M6502_ZF 2 //0b00000010
 #define M6502_CF 1 //0b00000001
 
+#define WRITE() cpu->RW = 0;
+#define READ() cpu->RW = 1;
+
 void set_nz(m6502_t *cpu, Byte value) {
     (value == 0) ? (cpu->P |= M6502_ZF) : (cpu->P &= ~M6502_ZF);
     ((value & 0b10000000) > 0) ? (cpu->P |= M6502_NF) : (cpu->P &= ~M6502_NF);
@@ -55,69 +58,54 @@ void tick_m6502(m6502_t *cpu) {
         _SYNC_OFF();
         //printf("Instruction: %02X\n", cpu->DataBus);
         cpu->IR = cpu->DB << 3;
-        cpu->RW = 1;
         cpu->IRX = 0;
         if (cpu->RESET) {
             cpu->IR = INS_BRK_IMP << 3;
         } else {
             PC();
             FB();
+            printf("Loaded Instruction: 0x%02X\n", cpu->DB);
         }
 
         return;
     }
 
+    READ();
     switch(cpu->IR++) {
-    // Reset instruction very inaccurate atm
-    case INS_BRK_IMP<<3|0:cpu->RESET = 0;break;
-    case INS_BRK_IMP<<3|1:break;
-    case INS_BRK_IMP<<3|2:cpu->AB = 0xFFFC;break;
-    case INS_BRK_IMP<<3|3:cpu->IRX = cpu->DB;cpu->AB++;break;
-    case INS_BRK_IMP<<3|4:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX;break;
-    case INS_BRK_IMP<<3|5:cpu->PC = cpu->IRX;_SYNC_ON();break;
-  
+    /* --- Tested Instructions --- */
     case INS_LDA_IM<<3|0:cpu->A = cpu->DB;PC();set_nz(cpu, cpu->A);_SYNC_ON();break;
 
+    case INS_LDX_IM<<3|0:cpu->X = cpu->DB;PC();set_nz(cpu, cpu->X);_SYNC_ON();break;
+
+    case INS_LDY_IM<<3|0:cpu->Y = cpu->DB;PC();set_nz(cpu, cpu->Y);_SYNC_ON();break;
+
+    case INS_STA_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_STA_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();WRITE();cpu->DB = cpu->A;cpu->AB = cpu->IRX;break;
+    case INS_STA_AB<<3|2:_SYNC_ON();break;
+
+    case INS_STA_ZP<<3|0:WRITE();cpu->AB = cpu->DB;cpu->DB = cpu->A;PC();break;
+    case INS_STA_ZP<<3|1:_SYNC_ON();break;
+    
     case INS_LDA_ZP<<3|0:FBZ();PC();break;
     case INS_LDA_ZP<<3|1:cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
-
+    
     case INS_LDA_ZPX<<3|0:FBZ();PC();break;
     case INS_LDA_ZPX<<3|1:FBX();break;
     case INS_LDA_ZPX<<3|2:cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
-
+    
     case INS_LDA_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_LDA_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
     case INS_LDA_AB<<3|2:cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
-
-    // Has between 4 and 5 cycles
+    
     case INS_LDA_ABX<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_LDA_ABX<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->X;break;
-    case INS_LDA_ABX<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) cpu->A = cpu->DB;_SYNC_ON();break;
+    case INS_LDA_ABX<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) {cpu->A = cpu->DB;_SYNC_ON();}break;
     case INS_LDA_ABX<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
 
-    // Has between 4 and 5 cycles
     case INS_LDA_ABY<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_LDA_ABY<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->Y;break;
-    case INS_LDA_ABY<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) cpu->A = cpu->DB;_SYNC_ON();break;
+    case INS_LDA_ABY<<3|2:if (!(cpu->AB ^ cpu->IRX) >> 8) {cpu->A = cpu->DB;_SYNC_ON()};break;
     case INS_LDA_ABY<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
-
-    case INS_LDA_INX<<3|0:FBZ();PC();break;
-    case INS_LDA_INX<<3|1:cpu->AB = cpu->DB + cpu->X;break;
-    case INS_LDA_INX<<3|2:cpu->IRX = cpu->DB;cpu->AB += 1;break;
-    case INS_LDA_INX<<3|3:cpu->IRX |= (Word)cpu->DB << 8;FBIRX();break;
-    case INS_LDA_INX<<3|4: _SYNC_ON();cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
-    case INS_LDA_INY<<3|0:FBZ();PC();break;
-    case INS_LDA_INY<<3|1:cpu->IRX = cpu->DB;cpu->AB += 1;break;
-    case INS_LDA_INY<<3|2:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX + cpu->Y;break;           
-    case INS_LDA_INY<<3|3:
-        if ((cpu->AB ^ cpu->DB)>> 8) cpu->A = cpu->DB;_SYNC_ON();
-        break;
-    case INS_LDA_INY<<3|4:
-        cpu->A = cpu->DB;
-        _SYNC_ON();
-        break;
-
-    case INS_LDX_IM<<3|0:cpu->X = cpu->DB;PC();set_nz(cpu, cpu->X);_SYNC_ON();break;
     
     case INS_LDX_ZP<<3|0:FBZ();PC();break;
     case INS_LDX_ZP<<3|1:cpu->X = cpu->DB;set_nz(cpu, cpu->X);_SYNC_ON();break;
@@ -129,6 +117,50 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDX_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_LDX_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
     case INS_LDX_AB<<3|2:cpu->X = cpu->DB;set_nz(cpu, cpu->X);_SYNC_ON();break;
+    /* --------------------------- */
+
+
+    /* CPU Flag Status changes should all be working */
+    case INS_CLC_IMP<<3|0:cpu->P &= ~M6502_CF;_SYNC_ON();break;
+    case INS_CLD_IMP<<3|0:cpu->P &= ~M6502_DF;_SYNC_ON();break;
+    case INS_CLI_IMP<<3|0:cpu->P &= ~M6502_IF;_SYNC_ON();break;
+    case INS_CLV_IMP<<3|0:cpu->P &= ~M6502_VF;_SYNC_ON();break;
+    case INS_SEC_IMP<<3|0:cpu->P |= M6502_CF;_SYNC_ON();break;
+    case INS_SED_IMP<<3|0:cpu->P |= M6502_DF;_SYNC_ON();break;
+    case INS_SEI_IMP<<3|0:cpu->P |= M6502_IF;_SYNC_ON();break;
+    /* --------------------------- */
+
+    // Reset instruction very inaccurate atm
+    case INS_BRK_IMP<<3|0:cpu->RESET = 0;break;
+    case INS_BRK_IMP<<3|1:break;
+    case INS_BRK_IMP<<3|2:cpu->AB = 0xFFFC;break;
+    case INS_BRK_IMP<<3|3:cpu->IRX = cpu->DB;cpu->AB++;break;
+    case INS_BRK_IMP<<3|4:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX;break;
+    case INS_BRK_IMP<<3|5:cpu->PC = cpu->IRX;_SYNC_ON();break;
+
+    case INS_RTI_IMP<<3|0: break;
+    case INS_RTI_IMP<<3|1: break;
+    case INS_RTI_IMP<<3|2: break;
+    case INS_RTI_IMP<<3|3: break;
+    case INS_RTI_IMP<<3|4:
+        _SYNC_ON();
+        break;
+
+
+
+    case INS_LDA_INX<<3|0:FBZ();PC();break;
+    case INS_LDA_INX<<3|1:cpu->AB = cpu->DB + cpu->X;break;
+    case INS_LDA_INX<<3|2:cpu->IRX = cpu->DB;cpu->AB += 1;break;
+    case INS_LDA_INX<<3|3:cpu->IRX |= (Word)cpu->DB << 8;FBIRX();break;
+    case INS_LDA_INX<<3|4: _SYNC_ON();cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
+
+    case INS_LDA_INY<<3|0:FBZ();PC();break;
+    case INS_LDA_INY<<3|1:cpu->IRX = cpu->DB;cpu->AB += 1;break;
+    case INS_LDA_INY<<3|2:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX + cpu->Y;break;           
+    case INS_LDA_INY<<3|3:if ((cpu->AB ^ cpu->DB)>> 8) {cpu->A = cpu->DB;_SYNC_ON();}break;
+    case INS_LDA_INY<<3|4:cpu->A = cpu->DB;_SYNC_ON();break;
+
+    
 
     case INS_JMP_AB<<3|0:
         cpu->IRX = cpu->DB;PC();FB();break;
@@ -154,10 +186,21 @@ void tick_m6502(m6502_t *cpu) {
         _SYNC_ON();
         break;
 
-//    case INS_LDX_ABY<<3|0: break;
-//    case INS_LDX_ABY<<3|1: break;
-//    case INS_LDX_ABY<<3|2: break;
-//    case INS_LDX_ABY<<3|3: break;
+    case INS_JSP_AB<<3|0: break;    
+    case INS_JSP_AB<<3|1: break;    
+    case INS_JSP_AB<<3|2: break;    
+    case INS_JSP_AB<<3|3: break;    
+    case INS_JSP_AB<<3|4:
+        _SYNC_ON();
+        break;    
+
+    case INS_RTS_IMP<<3|0: break;
+    case INS_RTS_IMP<<3|1: break;
+    case INS_RTS_IMP<<3|2: break;
+    case INS_RTS_IMP<<3|3: break;
+    case INS_RTS_IMP<<3|4:
+        _SYNC_ON();
+        break;
 
     case INS_NOP_IMP<<3|0: _SYNC_ON(); break;
     default:
