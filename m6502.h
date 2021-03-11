@@ -1,6 +1,13 @@
 #ifndef _CPU_H_
 #define _CPU_H_
 
+
+// Memory Map
+// 0x0000 - 0x00FF Zero Page
+// 0x0100 - 0x01FF Stack
+// 0X0200 - 0x1FFF General Memory
+
+
 // 6502 Instructions 
 
 /* Load/Store Operations */

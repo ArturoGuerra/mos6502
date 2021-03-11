@@ -41,12 +41,12 @@ int main(int argc, char* argv[]) {
         // Read
         if (cpu.RW) {
             cpu.DB = Memory[cpu.AB];
-            if (i > 6) printf("Reading from:0x%04X Data:0x%02X\n", cpu.AB, cpu.DB);
+            //if (i > 6) printf("Reading from:0x%04X Data:0x%02X\n", cpu.AB, cpu.DB);
         }
         
         // Write
         else {
-            printf("Writing to: %04X\n", cpu.AB);
+            //printf("Writing to: %04X\n", cpu.AB);
             Memory[cpu.AB] = cpu.DB;
         }
         
@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 
     printf("ZeroPage Mode: %02X\n", Memory[0x001F]);
-    printf("Absolute Mode: %02X\n", Memory[0x1FFF]);
+    printf("Absolute Mode: %02X\n", Memory[0x3FFF]);
     
 
 //    int i = 1;
