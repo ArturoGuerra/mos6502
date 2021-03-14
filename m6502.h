@@ -379,7 +379,7 @@ typedef struct m6502_s {
     Word IRX; // Internal general purpose internal register
 } m6502_t;
 
-void init_m6502(Word initVector, m6502_t *cpu);
+void init_m6502(m6502_t *cpu);
 void tick_m6502(m6502_t *cpu);
 
 #endif

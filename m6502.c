@@ -27,15 +27,18 @@
 #define WRITE() cpu->RW = 0;
 #define READ() cpu->RW = 1;
 
+#define PUSH() cpu->SP--;
+#define POP() cpu->SP++;
+
 void set_nz(m6502_t *cpu, Byte value) {
     (value == 0) ? (cpu->P |= M6502_ZF) : (cpu->P &= ~M6502_ZF);
     ((value & 0b10000000) > 0) ? (cpu->P |= M6502_NF) : (cpu->P &= ~M6502_NF);
 }
 
 
-void init_m6502(Word initVector, m6502_t *cpu) {
+void init_m6502(m6502_t *cpu) {
     // Sets the program counter vector
-    cpu->PC = initVector;
+    cpu->PC = 0xFFFC;
     // Sets the stack pointer to 255
     cpu->SP = 0xFF;
     // Sets all cpu flags to 0
@@ -135,12 +138,30 @@ void tick_m6502(m6502_t *cpu) {
     /* ----------- */
 
     /* To be tested */
+
+
+
     /* ------------ */
 
     /* --- Tested Instructions --- */
+    // Execute first for best performance PHP is slow :) :)
+    case INS_PHP_IMP<<3|0:cpu->DB = cpu->P;cpu->AB = cpu->SP;WRITE();break;
+    case INS_PHP_IMP<<3|1:PUSH();_SYNC_ON();break;
+    
+    case INS_PLP_IMP<<3|0:POP();break;
+    case INS_PLP_IMP<<3|1:cpu->AB = cpu->SP;break;
+    case INS_PLP_IMP<<3|2:cpu->P = cpu->DB;_SYNC_ON();break;
+
+    case INS_PHA_IMP<<3|0:cpu->DB = cpu->A;cpu->AB = cpu->SP;WRITE();break;
+    case INS_PHA_IMP<<3|1:PUSH();_SYNC_ON();break;
+    
     case INS_JMP_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_JMP_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;cpu->PC = cpu->IRX;_SYNC_ON();break;
-    
+
+    case INS_PLA_IMP<<3|0:POP();break;
+    case INS_PLA_IMP<<3|1:cpu->AB = cpu->SP;break;
+    case INS_PLA_IMP<<3|2:cpu->A = cpu->DB;set_nz(cpu, cpu->A);;_SYNC_ON();break;
+
     case INS_JMP_IN<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_JMP_IN<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX;break;
     case INS_JMP_IN<<3|2:cpu->IRX = cpu->DB;cpu->AB++;break;
@@ -187,6 +208,8 @@ void tick_m6502(m6502_t *cpu) {
     case INS_STA_ABY<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->IRX += cpu->Y;break;
     case INS_STA_ABY<<3|2:WRITE();cpu->AB = cpu->IRX;cpu->DB = cpu->A;break;
     case INS_STA_ABY<<3|3:;_SYNC_ON();break;
+
+    case INS_TXS_IMP<<3|0:cpu->SP = cpu->X;_SYNC_ON();break;
     
     case INS_STA_ABX<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_STA_ABX<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->IRX += cpu->X;break;
@@ -240,6 +263,8 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDA_ABY<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->Y;break;
     case INS_LDA_ABY<<3|2:if (PAGECROSS(cpu->AB, cpu->IRX))break;cpu->A = cpu->DB;_SYNC_ON();break;
     case INS_LDA_ABY<<3|3:cpu->A = cpu->DB;_SYNC_ON();break;
+    
+    case INS_TSX_IMP<<3|0:cpu->X = cpu->SP;set_nz(cpu, cpu->X);_SYNC_ON();break;
     
     case INS_LDY_ABX<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_LDY_ABX<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->X;break;
