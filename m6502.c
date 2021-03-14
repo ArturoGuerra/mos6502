@@ -135,10 +135,6 @@ void tick_m6502(m6502_t *cpu) {
     /* ----------- */
 
     /* To be tested */
-    case INS_TAX_IMP<<3|0:cpu->X=cpu->A;set_nz(cpu, cpu->X);_SYNC_ON();break;
-    case INS_TAY_IMP<<3|0:cpu->Y=cpu->A;set_nz(cpu, cpu->Y);_SYNC_ON();break;
-    case INS_TXA_IMP<<3|0:cpu->A=cpu->X;set_nz(cpu, cpu->A);_SYNC_ON();break;
-    case INS_TYA_IMP<<3|0:cpu->A=cpu->Y;set_nz(cpu, cpu->A);_SYNC_ON();break;
     /* ------------ */
 
     /* --- Tested Instructions --- */
@@ -158,6 +154,8 @@ void tick_m6502(m6502_t *cpu) {
     
     case INS_STX_ZP<<3|0:WRITE();cpu->AB = cpu->DB;cpu->DB = cpu->X;PC();break;
     case INS_STX_ZP<<3|1:_SYNC_ON();break;
+    
+    case INS_TXA_IMP<<3|0:cpu->A=cpu->X;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
     case INS_STY_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_STY_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();WRITE();cpu->DB = cpu->Y;cpu->AB = cpu->IRX;break;
@@ -183,6 +181,8 @@ void tick_m6502(m6502_t *cpu) {
     case INS_STX_ZPY<<3|1:WRITE();cpu->DB = cpu->X;break;
     case INS_STX_ZPY<<3|2:_SYNC_ON();break;
     
+    case INS_TYA_IMP<<3|0:cpu->A=cpu->Y;set_nz(cpu, cpu->A);_SYNC_ON();break;
+    
     case INS_STA_ABY<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_STA_ABY<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->IRX += cpu->Y;break;
     case INS_STA_ABY<<3|2:WRITE();cpu->AB = cpu->IRX;cpu->DB = cpu->A;break;
@@ -205,9 +205,13 @@ void tick_m6502(m6502_t *cpu) {
     
     case INS_LDX_ZP<<3|0:FBZ();PC();break;
     case INS_LDX_ZP<<3|1:cpu->X = cpu->DB;set_nz(cpu, cpu->X);_SYNC_ON();break;
+    
+    case INS_TAY_IMP<<3|0:cpu->Y=cpu->A;set_nz(cpu, cpu->Y);_SYNC_ON();break;
 
     case INS_LDA_IM<<3|0:cpu->A = cpu->DB;PC();set_nz(cpu, cpu->A);_SYNC_ON();break;
 
+    case INS_TAX_IMP<<3|0:cpu->X=cpu->A;set_nz(cpu, cpu->X);_SYNC_ON();break;
+    
     case INS_LDY_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_LDY_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
     case INS_LDY_AB<<3|2:cpu->Y = cpu->DB;set_nz(cpu, cpu->Y);_SYNC_ON();break;
