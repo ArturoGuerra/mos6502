@@ -29,6 +29,7 @@
 
 #define PUSH() cpu->SP--;
 #define POP() cpu->SP++;
+#define RWSTACK() cpu->AB = cpu->SP;
 
 void set_nz(m6502_t *cpu, Byte value) {
     (value == 0) ? (cpu->P |= M6502_ZF) : (cpu->P &= ~M6502_ZF);
@@ -66,6 +67,7 @@ void tick_m6502(m6502_t *cpu) {
         cpu->IRX = 0;
         if (cpu->RESET) {
             cpu->IR = INS_BRK_IMP << 3;
+            cpu->RESET = 0;
         } else {
             PC();
             FB();
@@ -77,39 +79,8 @@ void tick_m6502(m6502_t *cpu) {
 
     READ();
     switch(cpu->IR++) {
-    // Reset instruction very inaccurate atm
-    case INS_BRK_IMP<<3|0:cpu->RESET = 0;break;
-    case INS_BRK_IMP<<3|1:break;
-    case INS_BRK_IMP<<3|2:cpu->AB = 0xFFFC;break;
-    case INS_BRK_IMP<<3|3:cpu->IRX = cpu->DB;cpu->AB++;break;
-    case INS_BRK_IMP<<3|4:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX;break;
-    case INS_BRK_IMP<<3|5:cpu->PC = cpu->IRX;_SYNC_ON();break;
-    
+
     /* To be implemented */
-    case INS_RTI_IMP<<3|0: break;
-    case INS_RTI_IMP<<3|1: break;
-    case INS_RTI_IMP<<3|2: break;
-    case INS_RTI_IMP<<3|3: break;
-    case INS_RTI_IMP<<3|4:
-        _SYNC_ON();
-        break;
-
-    case INS_JSP_AB<<3|0: cpu->IRX = cpu->DB;PC();FB();break;
-    case INS_JSP_AB<<3|1: cpu->IRX |= (Word)cpu->DB << 8;PC();FB();break;
-    case INS_JSP_AB<<3|2: break;
-    case INS_JSP_AB<<3|3: break;
-    case INS_JSP_AB<<3|4:
-        _SYNC_ON();
-        break;
-
-    case INS_RTS_IMP<<3|0: break;
-    case INS_RTS_IMP<<3|1: break;
-    case INS_RTS_IMP<<3|2: break;
-    case INS_RTS_IMP<<3|3: break;
-    case INS_RTS_IMP<<3|4:
-        _SYNC_ON();
-        break;
-    
     case INS_STA_INX<<3|0: break;
     case INS_STA_INX<<3|1: break;
     case INS_STA_INX<<3|2: break;
@@ -141,23 +112,43 @@ void tick_m6502(m6502_t *cpu) {
     /* ------------ */
 
     /* --- Tested Instructions --- */
+    // First instruction that will be executed (Should be replaced by PHP smh)
+    case INS_BRK_IMP<<3|0:PC();cpu->DB = cpu->PC >> 8;RWSTACK();WRITE();PUSH();break;
+    case INS_BRK_IMP<<3|1:cpu->DB = cpu->PC & 0xFF;RWSTACK();WRITE();PUSH();break;
+    case INS_BRK_IMP<<3|2:cpu->DB = cpu->P;RWSTACK();WRITE();PUSH();break;
+    case INS_BRK_IMP<<3|3:cpu->AB = 0xFFFC;break;
+    case INS_BRK_IMP<<3|4:cpu->PC = cpu->DB;cpu->AB++;break;
+    case INS_BRK_IMP<<3|5:cpu->PC |= (Word)cpu->DB << 8;_SYNC_ON();break;
+    
     // Execute first for best performance PHP is slow :) :)
-    case INS_PHP_IMP<<3|0:cpu->DB = cpu->P;cpu->AB = cpu->SP;WRITE();break;
+    case INS_PHP_IMP<<3|0:cpu->DB = cpu->P;RWSTACK();WRITE();break;
     case INS_PHP_IMP<<3|1:PUSH();_SYNC_ON();break;
     
     case INS_PLP_IMP<<3|0:POP();break;
-    case INS_PLP_IMP<<3|1:cpu->AB = cpu->SP;break;
+    case INS_PLP_IMP<<3|1:RWSTACK();break;
     case INS_PLP_IMP<<3|2:cpu->P = cpu->DB;_SYNC_ON();break;
 
-    case INS_PHA_IMP<<3|0:cpu->DB = cpu->A;cpu->AB = cpu->SP;WRITE();break;
+    case INS_JSP_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_JSP_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FB();break;
+    case INS_JSP_AB<<3|2:cpu->DB = (cpu->PC - 1) >> 8;RWSTACK();WRITE();PUSH();break;
+    case INS_JSP_AB<<3|3:cpu->DB = (cpu->PC - 1) & 0xFF;RWSTACK();WRITE();PUSH();break;
+    case INS_JSP_AB<<3|4:cpu->PC = cpu->IRX;_SYNC_ON();break;
+    
+    case INS_PHA_IMP<<3|0:cpu->DB = cpu->A;RWSTACK();WRITE();break;
     case INS_PHA_IMP<<3|1:PUSH();_SYNC_ON();break;
     
     case INS_JMP_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_JMP_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;cpu->PC = cpu->IRX;_SYNC_ON();break;
 
+    case INS_RTS_IMP<<3|0:break;
+    case INS_RTS_IMP<<3|1:POP();RWSTACK();break;
+    case INS_RTS_IMP<<3|2:cpu->PC = cpu->DB;POP();RWSTACK();break;
+    case INS_RTS_IMP<<3|3:cpu->PC |= (Word)cpu->DB << 8;RWSTACK();break;
+    case INS_RTS_IMP<<3|4:PC();_SYNC_ON();break;
+    
     case INS_PLA_IMP<<3|0:POP();break;
-    case INS_PLA_IMP<<3|1:cpu->AB = cpu->SP;break;
-    case INS_PLA_IMP<<3|2:cpu->A = cpu->DB;set_nz(cpu, cpu->A);;_SYNC_ON();break;
+    case INS_PLA_IMP<<3|1:RWSTACK();break;
+    case INS_PLA_IMP<<3|2:cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
     case INS_JMP_IN<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
     case INS_JMP_IN<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX;break;
@@ -346,6 +337,14 @@ void tick_m6502(m6502_t *cpu) {
     case INS_SED_IMP<<3|0:cpu->P |= M6502_DF;_SYNC_ON();break;
     case INS_SEI_IMP<<3|0:cpu->P |= M6502_IF;_SYNC_ON();break;
     /* --------------------------- */
+
+    /* Untestable atm  */
+    case INS_RTI_IMP<<3|0:POP();RWSTACK();break;
+    case INS_RTI_IMP<<3|1:cpu->P = cpu->DB;POP();RWSTACK();break;
+    case INS_RTI_IMP<<3|2:cpu->IRX = cpu->DB;POP();RWSTACK();break;
+    case INS_RTI_IMP<<3|3:cpu->IRX |= (Word)cpu->DB << 8;break;
+    case INS_RTI_IMP<<3|4:cpu->PC = cpu->IRX;_SYNC_ON();break;
+    /* --------------- */
 
 
     default:
