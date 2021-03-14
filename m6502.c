@@ -138,7 +138,6 @@ void tick_m6502(m6502_t *cpu) {
     /* ----------- */
 
     /* To be tested */
-
     case INS_INC_ZP<<3|0:FBZ();PC();break;
     case INS_INC_ZP<<3|1:cpu->DB++;set_nz(cpu, cpu->DB);break;
     case INS_INC_ZP<<3|2:WRITE();break;
@@ -163,10 +162,6 @@ void tick_m6502(m6502_t *cpu) {
     case INS_INC_ABX<<3|4:WRITE();break;
     case INS_INC_ABX<<3|5:_SYNC_ON();break;
 
-    case INS_INX_IMP<<3|0:cpu->X++;set_nz(cpu, cpu->X);_SYNC_ON();break;
-
-    case INS_INY_IMP<<3|0:cpu->Y++;set_nz(cpu, cpu->Y);_SYNC_ON();break;
-
 
     case INS_DEC_ZP<<3|0:FBZ();PC();break;
     case INS_DEC_ZP<<3|1:cpu->DB--;set_nz(cpu, cpu->DB);break;
@@ -176,7 +171,7 @@ void tick_m6502(m6502_t *cpu) {
     case INS_DEC_ZPX<<3|0:FBZ();PC();break;
     case INS_DEC_ZPX<<3|1:FBX();break;
     case INS_DEC_ZPX<<3|2:cpu->DB--;set_nz(cpu, cpu->DB);break;
-    case INS_DEC_ZPX<<3|3:WRTIE();break;
+    case INS_DEC_ZPX<<3|3:WRITE();break;
     case INS_DEC_ZPX<<3|4:_SYNC_ON();break;
 
     case INS_DEC_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
@@ -184,17 +179,16 @@ void tick_m6502(m6502_t *cpu) {
     case INS_DEC_AB<<3|2:cpu->DB--;set_nz(cpu, cpu->DB);break;
     case INS_DEC_AB<<3|3:WRITE();break;
     case INS_DEC_AB<<3|4:_SYNC_ON();break;
+    
 
-    case INS_DEC_ABX<<3|0: break;
-    case INS_DEC_ABX<<3|1: break;
-    case INS_DEC_ABX<<3|2: break;
-    case INS_DEC_ABX<<3|3: break;
-    case INS_DEC_ABX<<3|4: break;
-    case INS_DEC_ABX<<3|5: break;
+    case INS_DEC_ABX<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_DEC_ABX<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
+    case INS_DEC_ABX<<3|2:cpu->AB = cpu->IRX + cpu->X;break;
+    case INS_DEC_ABX<<3|3:cpu->DB--;set_nz(cpu, cpu->DB);break;
+    case INS_DEC_ABX<<3|4:WRITE();break;
+    case INS_DEC_ABX<<3|5:_SYNC_ON();break;
+    
 
-    case INS_DEX_IMP<<3|0:cpu->X--;set_nz(cpu, cpu->X);_SYNC_ON();break;
-
-    case INS_DEY_IMP<<3|0:cpu->Y--;set_nz(cpu, cpu->Y);_SYNC_ON();break;
     /* ------------ */
 
     /* --- Tested Instructions --- */
@@ -229,6 +223,8 @@ void tick_m6502(m6502_t *cpu) {
     
     case INS_STX_ZP<<3|0:WRITE();cpu->AB = cpu->DB;cpu->DB = cpu->X;PC();break;
     case INS_STX_ZP<<3|1:_SYNC_ON();break;
+    
+    case INS_DEY_IMP<<3|0:cpu->Y--;set_nz(cpu, cpu->Y);_SYNC_ON();break;
     
     case INS_TXA_IMP<<3|0:cpu->A=cpu->X;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
@@ -334,6 +330,12 @@ void tick_m6502(m6502_t *cpu) {
     case INS_LDX_ABY<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->Y;break;
     case INS_LDX_ABY<<3|2:if (PAGECROSS(cpu->AB, cpu->IRX))break;cpu->X = cpu->DB;_SYNC_ON();break;
     case INS_LDX_ABY<<3|3:cpu->X = cpu->DB;_SYNC_ON();break;
+    
+    case INS_INY_IMP<<3|0:cpu->Y++;set_nz(cpu, cpu->Y);_SYNC_ON();break;
+
+    case INS_DEX_IMP<<3|0:cpu->X--;set_nz(cpu, cpu->X);_SYNC_ON();break;
+    
+    case INS_INX_IMP<<3|0:cpu->X++;set_nz(cpu, cpu->X);_SYNC_ON();break;
     
     case INS_NOP_IMP<<3|0: _SYNC_ON(); break;
     /* --------------------------- */
