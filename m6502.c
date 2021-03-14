@@ -135,7 +135,10 @@ void tick_m6502(m6502_t *cpu) {
     /* ----------- */
 
     /* To be tested */
-
+    case INS_TAX_IMP<<3|0:cpu->X=cpu->A;set_nz(cpu, cpu->X);_SYNC_ON();break;
+    case INS_TAY_IMP<<3|0:cpu->Y=cpu->A;set_nz(cpu, cpu->Y);_SYNC_ON();break;
+    case INS_TXA_IMP<<3|0:cpu->A=cpu->X;set_nz(cpu, cpu->A);_SYNC_ON();break;
+    case INS_TYA_IMP<<3|0:cpu->A=cpu->Y;set_nz(cpu, cpu->A);_SYNC_ON();break;
     /* ------------ */
 
     /* --- Tested Instructions --- */
