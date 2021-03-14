@@ -41,12 +41,10 @@ int main(int argc, char* argv[]) {
         // Read
         if (cpu.RW) {
             cpu.DB = Memory[cpu.AB];
-            //if (i > 6) printf("Reading from:0x%04X Data:0x%02X\n", cpu.AB, cpu.DB);
         }
         
         // Write
         else {
-            //printf("Writing to: %04X\n", cpu.AB);
             Memory[cpu.AB] = cpu.DB;
         }
         
@@ -57,12 +55,17 @@ int main(int argc, char* argv[]) {
     printf("Absolute Mode: %02X\n", Memory[0x1FFF]);
     
 
-//    int i = 1;
-//
-//    while(cpu.RDY) {
-//        printf("Tick: %d\n", i);
+//   for(int i = 0;cpu.RDY;i++) {
 //        tick_m6502(&cpu, Memory);
-//        printf("PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX\n", cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y);
-//        i++;
+//        if (i > 6) printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X R/W:%d\n", i, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB, cpu.RW);
+//        // Read
+//        if (cpu.RW) {
+//            cpu.DB = Memory[cpu.AB];
+//        }
+//        
+//        // Write
+//        else {
+//            Memory[cpu.AB] = cpu.DB;
+//        }
 //    }
 }
