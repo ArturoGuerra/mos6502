@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 
 
     printf("ZeroPage Mode: %02X\n", Memory[0x001F]);
-    printf("Absolute Mode: %02X\n", Memory[0x3FFF]);
+    printf("Absolute Mode: %02X\n", Memory[0x1FFF]);
     
 
 //    int i = 1;
