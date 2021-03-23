@@ -113,31 +113,8 @@ void tick_m6502(m6502_t *cpu) {
     /* ----------- */
 
     /* To be tested */
-    case INS_ASL_ACC<<3|0:set_carry(cpu, cpu->A);cpu->A = cpu->A << 1;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_ASL_ZP<<3|0:PC();FBZ();break;
-    case INS_ASL_ZP<<3|1:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
-    case INS_ASL_ZP<<3|2:cpu->DB = cpu->IRX;WRITE();break;
-    case INS_ASL_ZP<<3|3:_SYNC_ON();break;
 
-    case INS_ASL_ZPX<<3|0:PC();FBZ();break;
-    case INS_ASL_ZPX<<3|1:cpu->AB = cpu->DB + cpu->X;break;
-    case INS_ASL_ZPX<<3|2:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
-    case INS_ASL_ZPX<<3|3:cpu->DB = cpu->IRX;WRITE();break;
-    case INS_ASL_ZPX<<3|4:_SYNC_ON();break;
-
-    case INS_ASL_AB<<3|0:cpu->IRX = cpu->DB;PC();break;
-    case INS_ASL_AB<<3|1:cpu->IRX |= cpu->DB << 8;PC();FBIRX();break;
-    case INS_ASL_AB<<3|2:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
-    case INS_ASL_AB<<3|3:cpu->DB = cpu->IRX;WRITE();break;
-    case INS_ASL_AB<<3|4:_SYNC_ON();break;
-
-    case INS_ASL_ABX<<3|0:cpu->IRX = cpu->DB;PC();break;
-    case INS_ASL_ABX<<3|1:cpu->IRX |= cpu->DB << 8;PC();break;
-    case INS_ASL_ABX<<3|2:cpu->AB += cpu->X;break;
-    case INS_ASL_ABX<<3|3:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
-    case INS_ASL_ABX<<3|4:cpu->DB = cpu->IRX;WRITE();break;
-    case INS_ASL_ABX<<3|5:_SYNC_ON();break;
     /* ------------ */
 
     /* --- Tested Instructions --- */
@@ -149,9 +126,35 @@ void tick_m6502(m6502_t *cpu) {
     case INS_BRK_IMP<<3|4:cpu->PC = cpu->DB;cpu->AB++;break;
     case INS_BRK_IMP<<3|5:cpu->PC |= (Word)cpu->DB << 8;_SYNC_ON();break;
     
+    case INS_ASL_ZP<<3|0:PC();FBZ();break;
+    case INS_ASL_ZP<<3|1:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
+    case INS_ASL_ZP<<3|2:cpu->DB = cpu->IRX;WRITE();break;
+    case INS_ASL_ZP<<3|3:_SYNC_ON();break;
+    
     // Execute first for best performance PHP is slow :) :)
     case INS_PHP_IMP<<3|0:cpu->DB = cpu->P;RWSTACK();WRITE();break;
     case INS_PHP_IMP<<3|1:PUSH();_SYNC_ON();break;
+    
+    case INS_ASL_ACC<<3|0:set_carry(cpu, cpu->A);cpu->A = cpu->A << 1;set_nz(cpu, cpu->A);_SYNC_ON();break;
+    
+    case INS_ASL_AB<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_ASL_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
+    case INS_ASL_AB<<3|2:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
+    case INS_ASL_AB<<3|3:cpu->DB = cpu->IRX;WRITE();break;
+    case INS_ASL_AB<<3|4:_SYNC_ON();break;
+    
+    case INS_ASL_ZPX<<3|0:PC();FBZ();break;
+    case INS_ASL_ZPX<<3|1:cpu->AB += cpu->X;break;
+    case INS_ASL_ZPX<<3|2:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
+    case INS_ASL_ZPX<<3|3:cpu->DB = cpu->IRX;WRITE();break;
+    case INS_ASL_ZPX<<3|4:_SYNC_ON();break;
+    
+    case INS_ASL_ABX<<3|0:cpu->IRX = cpu->DB;PC();FB();break;
+    case INS_ASL_ABX<<3|1:cpu->IRX |= cpu->DB << 8;PC();break;
+    case INS_ASL_ABX<<3|2:cpu->IRX += cpu->X;FBIRX();break;
+    case INS_ASL_ABX<<3|3:set_carry(cpu, cpu->DB);cpu->IRX = cpu->DB << 1;set_nz(cpu, cpu->IRX);break;
+    case INS_ASL_ABX<<3|4:cpu->DB = cpu->IRX;WRITE();break;
+    case INS_ASL_ABX<<3|5:_SYNC_ON();break;
     
     case INS_PLP_IMP<<3|0:POP();break;
     case INS_PLP_IMP<<3|1:RWSTACK();break;
