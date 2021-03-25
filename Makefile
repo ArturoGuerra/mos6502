@@ -14,3 +14,9 @@ m6502:
 
 clean:
 	rm -rf m6502.o $(BIN)
+
+vasm-test:
+	vasm6502_oldstyle -Fbin -dotdir -o test.bin main.s
+
+test:
+	./m6502 test.bin
