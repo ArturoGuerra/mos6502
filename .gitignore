@@ -3,4 +3,4 @@ m6502
 *.bin
 __pycache__/*
 *.s
-m6502.dSYM
+m6502.dSYM/*
