@@ -84,37 +84,58 @@ void tick_m6502(m6502_t *cpu) {
     READ();
     switch(cpu->IR++) {
 
-    /* To be implemented */
-    case INS_STA_INX<<3|0: break;
-    case INS_STA_INX<<3|1: break;
-    case INS_STA_INX<<3|2: break;
-    case INS_STA_INX<<3|3: break;
-    case INS_STA_INX<<3|4:_SYNC_ON();break;
-
-    case INS_STA_INY<<3|0: break;
-    case INS_STA_INY<<3|1: break;
-    case INS_STA_INY<<3|2: break;
-    case INS_STA_INY<<3|3: break;
-    case INS_STA_INY<<3|4:_SYNC_ON();break;
-    /* ------------ */
-
-    /* Hard to test */
-    case INS_LDA_INX<<3|0:FBZ();PC();break;
-    case INS_LDA_INX<<3|1:cpu->AB = cpu->DB + cpu->X;break;
-    case INS_LDA_INX<<3|2:cpu->IRX = cpu->DB;cpu->AB++;break;
-    case INS_LDA_INX<<3|3:cpu->IRX |= (Word)cpu->DB << 8;FBIRX();break;
-    case INS_LDA_INX<<3|4: _SYNC_ON();cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
-
-    case INS_LDA_INY<<3|0:FBZ();PC();break;
-    case INS_LDA_INY<<3|1:cpu->IRX = cpu->DB;cpu->AB++;break;
-    case INS_LDA_INY<<3|2:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX + cpu->Y;break;           
-    case INS_LDA_INY<<3|3:if (PAGECROSS(cpu->AB, cpu->IRX))break;cpu->A = cpu->DB;_SYNC_ON();break;
-    case INS_LDA_INY<<3|4:cpu->A = cpu->DB;_SYNC_ON();break;    
-    /* ----------- */
-
     /* To be tested */
+    case INS_AND_IM<<3|0:break;
+    
+    case INS_AND_ZP<<3|0:break;
+    case INS_AND_ZP<<3|1:break;
 
+    case INS_AND_ZPX<<3|0:break;
+    case INS_AND_ZPX<<3|1:break;
+    case INS_AND_ZPX<<3|2:break;
 
+    case INS_AND_AB<<3|0:break;
+    case INS_AND_AB<<3|1:break;
+    case INS_AND_AB<<3|2:break;
+
+    case INS_AND_ABX<<3|0:break;
+    case INS_AND_ABX<<3|1:break;
+    case INS_AND_ABX<<3|2:break;
+    case INS_AND_ABX<<3|3:break;
+
+    case INS_AND_ABY<<3|0:break;
+    case INS_AND_ABY<<3|1:break;
+    case INS_AND_ABY<<3|2:break;
+    case INS_AND_ABY<<3|3:break;
+
+    case INS_AND_INX<<3|0:break;
+    case INS_AND_INX<<3|1:break;
+    case INS_AND_INX<<3|2:break;
+    case INS_AND_INX<<3|3:break;
+    case INS_AND_INX<<3|4:break;
+
+    case INS_AND_INY<<3|0:break;
+    case INS_AND_INY<<3|1:break;
+    case INS_AND_INY<<3|2:break;
+    case INS_AND_INY<<3|3:break;
+    case INS_AND_INY<<3|4:break;
+
+    case INS_EOR_IM<<3|0:break;
+
+    case INS_EOR_ZP<<3|0:break;
+    case INS_EOR_ZP<<3|1:break;
+
+    case INS_EOR_ZPX<<3|0:break;
+    case INS_EOR_ZPX<<3|1:break;
+    case INS_EOR_ZPX<<3|2:break;
+
+    case INS_EOR_AB<<3|0:break;
+    case INS_EOR_AB<<3|1:break;
+    case INS_EOR_AB<<3|2:break;
+
+    case INS_EOR_ABX<<3|0:break;
+    case INS_EOR_ABX<<3|1:break;
+    case INS_EOR_ABX<<3|2:break;
     /* ------------ */
 
     /* --- Tested Instructions --- */
@@ -370,13 +391,41 @@ void tick_m6502(m6502_t *cpu) {
     case INS_SEI_IMP<<3|0:cpu->P |= M6502_IF;_SYNC_ON();break;
     /* --------------------------- */
 
-    /* Untestable atm  */
+    /* Interupt stuff needs to be tested */
     case INS_RTI_IMP<<3|0:POP();RWSTACK();break;
     case INS_RTI_IMP<<3|1:cpu->P = cpu->DB;POP();RWSTACK();break;
     case INS_RTI_IMP<<3|2:cpu->IRX = cpu->DB;POP();RWSTACK();break;
     case INS_RTI_IMP<<3|3:cpu->IRX |= (Word)cpu->DB << 8;break;
     case INS_RTI_IMP<<3|4:cpu->PC = cpu->IRX;_SYNC_ON();break;
     /* --------------- */
+    /* To be implemented */
+    case INS_STA_INX<<3|0: break;
+    case INS_STA_INX<<3|1: break;
+    case INS_STA_INX<<3|2: break;
+    case INS_STA_INX<<3|3: break;
+    case INS_STA_INX<<3|4:_SYNC_ON();break;
+
+    case INS_STA_INY<<3|0: break;
+    case INS_STA_INY<<3|1: break;
+    case INS_STA_INY<<3|2: break;
+    case INS_STA_INY<<3|3: break;
+    case INS_STA_INY<<3|4:_SYNC_ON();break;
+    /* ------------ */
+
+    /* Hard to test */
+    case INS_LDA_INX<<3|0:FBZ();PC();break;
+    case INS_LDA_INX<<3|1:cpu->AB = cpu->DB + cpu->X;break;
+    case INS_LDA_INX<<3|2:cpu->IRX = cpu->DB;cpu->AB++;break;
+    case INS_LDA_INX<<3|3:cpu->IRX |= (Word)cpu->DB << 8;FBIRX();break;
+    case INS_LDA_INX<<3|4: _SYNC_ON();cpu->A = cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
+
+    case INS_LDA_INY<<3|0:FBZ();PC();break;
+    case INS_LDA_INY<<3|1:cpu->IRX = cpu->DB;cpu->AB++;break;
+    case INS_LDA_INY<<3|2:cpu->IRX |= (Word)cpu->DB << 8;cpu->AB = cpu->IRX + cpu->Y;break;           
+    case INS_LDA_INY<<3|3:if (PAGECROSS(cpu->AB, cpu->IRX))break;cpu->A = cpu->DB;_SYNC_ON();break;
+    case INS_LDA_INY<<3|4:cpu->A = cpu->DB;_SYNC_ON();break;    
+    /* ----------- */
+
 
 
     default:
