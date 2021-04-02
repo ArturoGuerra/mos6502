@@ -37,7 +37,8 @@ int main(int argc, char* argv[]) {
     int tick = 0;
     while(running) {
         tick_m6502(&cpu);
-        if (tick > 6) printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X R/W:%d\n", tick, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB, cpu.RW);
+        //if (tick > 6) printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X R/W:%d\n", tick, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB, cpu.RW);
+        printf("Tick:%d PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X R/W:%d\n", tick, cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB, cpu.RW);
         if (tick > 6 && cpu.IR == INS_BRK_IMP << 3) break;
 
 
