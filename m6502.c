@@ -85,57 +85,42 @@ void tick_m6502(m6502_t *cpu) {
     switch(cpu->IR++) {
 
     /* To be tested */
-    case INS_AND_IM<<3|0:break;
+    case INS_AND_IM<<3|0:cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
     
-    case INS_AND_ZP<<3|0:break;
-    case INS_AND_ZP<<3|1:break;
+    case INS_AND_ZP<<3|0:FBZ();PC();break;
+    case INS_AND_ZP<<3|1:cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_AND_ZPX<<3|0:break;
-    case INS_AND_ZPX<<3|1:break;
-    case INS_AND_ZPX<<3|2:break;
+    case INS_AND_ZPX<<3|0:FBZ();PC();break;
+    case INS_AND_ZPX<<3|1:FBX();break;
+    case INS_AND_ZPX<<3|2:cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_AND_AB<<3|0:break;
-    case INS_AND_AB<<3|1:break;
-    case INS_AND_AB<<3|2:break;
+    case INS_AND_AB<<3|0:cpu->IRX = cpu->DB;PC();break;
+    case INS_AND_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
+    case INS_AND_AB<<3|2:cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_AND_ABX<<3|0:break;
-    case INS_AND_ABX<<3|1:break;
-    case INS_AND_ABX<<3|2:break;
-    case INS_AND_ABX<<3|3:break;
+    case INS_AND_ABX<<3|0:cpu->IRX = cpu->DB;PC();break;
+    case INS_AND_ABX<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->X;break;
+    case INS_AND_ABX<<3|2:if (PAGECROSS(cpu->AB, cpu->IRX))break;cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
+    case INS_AND_ABX<<3|3:cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_AND_ABY<<3|0:break;
-    case INS_AND_ABY<<3|1:break;
-    case INS_AND_ABY<<3|2:break;
-    case INS_AND_ABY<<3|3:break;
+    case INS_AND_ABY<<3|0:cpu->IRX = cpu->DB;PC();break;
+    case INS_AND_ABY<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();cpu->AB = cpu->IRX + cpu->Y;break;
+    case INS_AND_ABY<<3|2:if(PAGECROSS(cpu->AB,cpu->IRX))break;cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
+    case INS_AND_ABY<<3|3:cpu->A &= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_AND_INX<<3|0:break;
-    case INS_AND_INX<<3|1:break;
-    case INS_AND_INX<<3|2:break;
-    case INS_AND_INX<<3|3:break;
-    case INS_AND_INX<<3|4:break;
+    case INS_EOR_IM<<3|0:cpu->A ^= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_AND_INY<<3|0:break;
-    case INS_AND_INY<<3|1:break;
-    case INS_AND_INY<<3|2:break;
-    case INS_AND_INY<<3|3:break;
-    case INS_AND_INY<<3|4:break;
+    case INS_EOR_ZP<<3|0:FBZ();PC();break;
+    case INS_EOR_ZP<<3|1:cpu->A ^= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_EOR_IM<<3|0:break;
+    case INS_EOR_ZPX<<3|0:FBZ();PC();break;
+    case INS_EOR_ZPX<<3|1:FBX();break;
+    case INS_EOR_ZPX<<3|2:cpu->A ^= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_EOR_ZP<<3|0:break;
-    case INS_EOR_ZP<<3|1:break;
+    case INS_EOR_AB<<3|0:cpu->IRX = cpu->DB;PC();break;
+    case INS_EOR_AB<<3|1:cpu->IRX |= (Word)cpu->DB << 8;PC();FBIRX();break;
+    case INS_EOR_AB<<3|2:cpu->A ^= cpu->DB;set_nz(cpu, cpu->A);_SYNC_ON();break;
 
-    case INS_EOR_ZPX<<3|0:break;
-    case INS_EOR_ZPX<<3|1:break;
-    case INS_EOR_ZPX<<3|2:break;
-
-    case INS_EOR_AB<<3|0:break;
-    case INS_EOR_AB<<3|1:break;
-    case INS_EOR_AB<<3|2:break;
-
-    case INS_EOR_ABX<<3|0:break;
-    case INS_EOR_ABX<<3|1:break;
-    case INS_EOR_ABX<<3|2:break;
     /* ------------ */
 
     /* --- Tested Instructions --- */
