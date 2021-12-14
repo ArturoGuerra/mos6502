@@ -4,3 +4,4 @@ m6502
 __pycache__/*
 *.s
 m6502.dSYM/*
+.vscode/*
