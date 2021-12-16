@@ -6,6 +6,8 @@
 #define _SYNC_ON() cpu->SYNC = 1; cpu->AB = cpu->PC;
 #define _SYNC_OFF() cpu->SYNC = 0;
 
+
+// Frequent cpu operations
 #define FB() cpu->AB = cpu->PC;
 #define FBZ() cpu->AB = cpu->DB;
 #define FBX() cpu->AB += cpu->X;
@@ -40,7 +42,7 @@ void set_carry(m6502_t *cpu, Byte value) {
     ((value & 0b10000000) > 0) ? (cpu->P |= M6502_CF) : (cpu->P &= ~M6502_CF);
 }
 
-
+// Initializes the cpu in a clean state
 void init_m6502(m6502_t *cpu) {
     // Sets the program counter vector
     cpu->PC = 0xFFFC;
@@ -63,6 +65,7 @@ void init_m6502(m6502_t *cpu) {
     SAB(cpu->PC);
 }
 
+// Tick the cpu by one cycle
 void tick_m6502(m6502_t *cpu) {
     if (cpu->SYNC) {
         _SYNC_OFF();
