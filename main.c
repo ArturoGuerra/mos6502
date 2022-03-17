@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
 
     char* filename = argv[1];
     // CPU and Memory reset
-    
+
     init_memory(Memory, MAX_MEM);
 
     FILE *fp;
@@ -28,7 +28,7 @@ int main(int argc, char* argv[]) {
     fclose(fp);
 
     printf("Rom Size: %d\n", size);
-    
+
     init_m6502(&cpu);
 
     printf("PC:0x%04X SP:0x%hhX A:0x%hhX X:0x%hhX Y:0x%hhX DB:0x%02X AB:0x%04X\n", cpu.PC, cpu.SP, cpu.A, cpu.X, cpu.Y, cpu.DB, cpu.AB);
