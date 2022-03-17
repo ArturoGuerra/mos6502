@@ -35,11 +35,11 @@
 
 void set_nz(m6502_t *cpu, Byte value) {
     (value == 0) ? (cpu->P |= M6502_ZF) : (cpu->P &= ~M6502_ZF);
-    ((value & 0b10000000) > 0) ? (cpu->P |= M6502_NF) : (cpu->P &= ~M6502_NF);
+    ((value & 0x80) > 0) ? (cpu->P |= M6502_NF) : (cpu->P &= ~M6502_NF);
 }
 
 void set_carry(m6502_t *cpu, Byte value) {
-    ((value & 0b10000000) > 0) ? (cpu->P |= M6502_CF) : (cpu->P &= ~M6502_CF);
+    ((value & 0x80) > 0) ? (cpu->P |= M6502_CF) : (cpu->P &= ~M6502_CF);
 }
 
 // Initializes the cpu in a clean state
