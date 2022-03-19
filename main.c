@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 
+#define CONSOLE // will print out console messages from the cpu emulator
 
 int main(int argc, char* argv[]) {
     m6502_t cpu;

@@ -18,13 +18,13 @@
 #define PAGECROSS(a1, a2) ((a1 >> 8) != (a2 >> 8))
 
 // CPU Status Flags
-#define M6502_NF 128 //0b10000000
-#define M6502_VF 64 //0b01000000
-#define M6502_BF 48 //0b00110000 // Not a real CPU Flag
-#define M6502_DF 8 //0b00001000
-#define M6502_IF 4 //0b00000100
-#define M6502_ZF 2 //0b00000010
-#define M6502_CF 1 //0b00000001
+#define M6502_NF 0x80 // 128 0b10000000
+#define M6502_VF 0x40 // 64  0b01000000
+#define M6502_BF 0x30 // 48  0b00110000 // Not a real CPU Flag
+#define M6502_DF 0x08 // 8   0b00001000
+#define M6502_IF 0x04 // 4   0b00000100
+#define M6502_ZF 0x02 // 2   0b00000010
+#define M6502_CF 0x01 // 1   0b00000001
 
 #define WRITE() cpu->RW = 0;
 #define READ() cpu->RW = 1;
@@ -69,7 +69,9 @@ void init_m6502(m6502_t *cpu) {
 void tick_m6502(m6502_t *cpu) {
     if (cpu->SYNC) {
         _SYNC_OFF();
-        //printf("Instruction: %02X\n", cpu->DataBus);
+        #ifdef CONSOLE
+        printf("Instruction: %02X\n", cpu->DataBus);
+        #endif
         cpu->IR = cpu->DB << 3;
         cpu->IRX = 0;
         if (cpu->RESET) {
@@ -78,7 +80,9 @@ void tick_m6502(m6502_t *cpu) {
         } else {
             PC();
             FB();
+            #ifdef CONSOLE
             printf("Loaded Instruction: 0x%02X\n", cpu->DB);
+            #endif
         }
 
         return;
@@ -417,8 +421,9 @@ void tick_m6502(m6502_t *cpu) {
 
 
     default:
+        #ifdef CONSOLE
         printf("Unknown instruction%02X\n", cpu->IR);
-        //getchar();
+        #endif
         break;
     }    
 }
